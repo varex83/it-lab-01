@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "crates/api",
+    "crates/core",
+    "crates/ui",
+    "crates/grpc",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+log = "0.4"
+thiserror = "1.0"
