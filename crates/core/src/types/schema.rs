@@ -65,8 +65,9 @@ impl DbValue {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum DbColumnType {
+    #[default]
     #[serde(rename = "integer")]
     Integer,
     #[serde(rename = "real")]
@@ -89,7 +90,6 @@ pub struct DbColumn {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct DbSchema {
-    pub name: String,
     pub columns: Vec<DbColumn>,
 }
 
@@ -102,7 +102,6 @@ mod tests {
     fn test_db_schema_deser() {
         let schema_json = r#"
         {
-            "name": "test_schema",
             "columns": [
                 {
                     "name": "id",
@@ -120,7 +119,6 @@ mod tests {
         let schema: DbSchema = serde_json::from_str(schema_json).unwrap();
 
         assert_eq!(schema, DbSchema {
-            name: "test_schema".to_string(),
             columns: vec![
                 DbColumn {
                     name: "id".to_string(),
@@ -137,7 +135,6 @@ mod tests {
     #[test]
     fn test_db_schema_ser() {
         let schema = DbSchema {
-            name: "another_yet_schema".to_string(),
             columns: vec![
                 DbColumn {
                     name: "id".to_string(),
@@ -156,7 +153,7 @@ mod tests {
 
         let schema_json = serde_json::to_string(&schema).unwrap();
 
-        assert_eq!(schema_json, r#"{"name":"another_yet_schema","columns":[{"name":"id","column_type":"integer"},{"name":"name","column_type":"string"},{"name":"surname","column_type":"string"}]}"#);
+        assert_eq!(schema_json, r#"{"columns":[{"name":"id","column_type":"integer"},{"name":"name","column_type":"string"},{"name":"surname","column_type":"string"}]}"#);
     }
 
     #[test]

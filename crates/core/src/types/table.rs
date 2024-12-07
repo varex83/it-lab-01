@@ -16,19 +16,21 @@ pub struct Table {
     pub schema: DbSchema,
     pub rows: HashMap<u32, Row>,
     pub index: u32,
+    pub name: String,
 }
 
 impl Table {
-    pub fn new(schema: DbSchema) -> Self {
+    pub fn new(name: String, schema: DbSchema) -> Self {
         Table {
             schema,
             rows: HashMap::new(),
             index: 0,
+            name,
         }
     }
 
     pub fn name(&self) -> &str {
-        &self.schema.name
+        &self.name
     }
 
     pub fn insert(&mut self, row: Vec<DbValue>) -> anyhow::Result<u32> {
@@ -110,7 +112,6 @@ impl Table {
 #[cfg(test)]
 pub fn create_test_schema() -> DbSchema {
     DbSchema {
-        name: "test_table".to_string(),
         columns: vec![
             DbColumn {
                 name: "col1".to_string(),
@@ -134,10 +135,11 @@ pub fn create_test_row() -> Vec<DbValue> {
 
 #[cfg(test)]
 pub fn create_test_table(name: &str) -> Table {
-    Table::new(DbSchema {
-        name: name.to_string(),
-        columns: vec![
-            DbColumn {
+    Table::new(
+        name.to_string(),
+        DbSchema {
+            columns: vec![
+                DbColumn {
                 name: "id".to_string(),
                 column_type: DbColumnType::Integer,
             },
@@ -156,7 +158,7 @@ pub mod tests {
     #[test]
     fn test_table_creation() {
         let schema = create_test_schema();
-        let table = Table::new(schema.clone());
+        let table = Table::new("test_table".to_string(), schema.clone());
         assert_eq!(table.name(), "test_table");
         assert_eq!(table.schema, schema);
         assert!(table.rows.is_empty());
@@ -165,7 +167,7 @@ pub mod tests {
 
     #[test]
     fn test_insert_valid_row() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let row = create_test_row();
         let id = table.insert(row.clone()).unwrap();
 
@@ -176,14 +178,14 @@ pub mod tests {
 
     #[test]
     fn test_insert_invalid_row_length() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let result = table.insert(vec![DbValue::Integer(42)]);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_insert_invalid_type() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let result = table.insert(vec![
             DbValue::String("wrong".to_string()),
             DbValue::String("test".to_string()),
@@ -193,7 +195,7 @@ pub mod tests {
 
     #[test]
     fn test_delete_existing_row() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let id = table.insert(create_test_row()).unwrap();
         assert!(table.delete(id).is_ok());
         assert!(table.rows.is_empty());
@@ -201,13 +203,13 @@ pub mod tests {
 
     #[test]
     fn test_delete_nonexistent_row() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         assert!(table.delete(0).is_err());
     }
 
     #[test]
     fn test_update_existing_row() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let id = table.insert(create_test_row()).unwrap();
 
         let new_row = vec![
@@ -221,8 +223,8 @@ pub mod tests {
 
     #[test]
     fn test_intersection() {
-        let mut table1 = Table::new(create_test_schema());
-        let mut table2 = Table::new(create_test_schema());
+        let mut table1 = Table::new("test_table".to_string(), create_test_schema());
+        let mut table2 = Table::new("test_table".to_string(), create_test_schema());
 
         let row1 = create_test_row();
         let row2 = vec![
@@ -242,18 +244,17 @@ pub mod tests {
 
     #[test]
     fn test_intersection_different_schemas() {
-        let mut different_schema = create_test_schema();
-        different_schema.name = "different".to_string();
+        let mut schema = create_test_schema();
 
-        let table1 = Table::new(create_test_schema());
-        let table2 = Table::new(different_schema);
+        let table1 = Table::new("test_table".to_string(), schema.clone());
+        let table2 = Table::new("different_table".to_string(), schema);
 
         assert!(table1.intersection(&table2).is_err());
     }
 
     #[test]
     fn test_get_rows() {
-        let mut table = Table::new(create_test_schema());
+        let mut table = Table::new("test_table".to_string(), create_test_schema());
         let row1 = create_test_row();
         let row2 = vec![
             DbValue::Integer(99),
