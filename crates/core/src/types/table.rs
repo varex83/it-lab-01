@@ -244,10 +244,34 @@ pub mod tests {
 
     #[test]
     fn test_intersection_different_schemas() {
-        let mut schema = create_test_schema();
+        let schema1 = DbSchema {
+            columns: vec![
+                DbColumn {
+                    name: "id".to_string(),
+                    column_type: DbColumnType::Integer,
+                },
+                DbColumn {
+                    name: "name".to_string(),
+                    column_type: DbColumnType::String,
+                },
+            ],
+        };
 
-        let table1 = Table::new("test_table".to_string(), schema.clone());
-        let table2 = Table::new("different_table".to_string(), schema);
+        let schema2 = DbSchema {
+            columns: vec![
+                DbColumn {
+                    name: "id".to_string(),
+                    column_type: DbColumnType::Integer,
+                },
+                DbColumn {
+                    name: "age".to_string(),
+                    column_type: DbColumnType::Integer,
+                },
+            ],
+        };
+
+        let table1 = Table::new("test_table".to_string(), schema1);
+        let table2 = Table::new("test_table".to_string(), schema2);
 
         assert!(table1.intersection(&table2).is_err());
     }

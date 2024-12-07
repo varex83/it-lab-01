@@ -303,7 +303,7 @@ mod tests {
         let client = create_test_client();
         let schema = create_test_schema();
         
-        let response = client.post("/api/schema/test_table")
+        let response = client.post("/api/tables/test_table")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
@@ -317,7 +317,7 @@ mod tests {
         
         // First create a table
         let schema = create_test_schema();
-        client.post("/api/schema/test_table")
+        client.post("/api/tables/test_table")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
@@ -332,7 +332,7 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         
         // Get the record back
-        let response = client.get("/api/tables/test_table/0")
+        let response = client.get("/api/tables/test_table/records/0")
             .dispatch();
             
         assert_eq!(response.status(), Status::Ok);
@@ -350,7 +350,7 @@ mod tests {
         
         // Create table and initial record
         let schema = create_test_schema();
-        client.post("/api/schema/test_table")
+        client.post("/api/tables/test_table")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
@@ -377,9 +377,11 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         
         // Verify the update
-        let response = client.get("/api/tables/test_table/0")
+        let response = client.get("/api/tables/test_table/records/0")
             .dispatch();
             
+        assert_eq!(response.status(), Status::Ok);
+        
         let retrieved_record: Record = serde_json::from_str(
             &response.into_string().unwrap()
         ).unwrap();
@@ -393,7 +395,7 @@ mod tests {
         
         // Create table and record
         let schema = create_test_schema();
-        client.post("/api/schema/test_table")
+        client.post("/api/tables/test_table")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
@@ -411,7 +413,7 @@ mod tests {
         assert_eq!(response.status(), Status::Ok);
         
         // Verify deletion
-        let response = client.get("/api/tables/test_table/0")
+        let response = client.get("/api/tables/test_table/records/0")
             .dispatch();
             
         assert_eq!(response.status(), Status::InternalServerError); // Should fail to find record
@@ -423,12 +425,12 @@ mod tests {
         
         // Create two tables with the same schema
         let schema = create_test_schema();
-        client.post("/api/schema/table1")
+        client.post("/api/tables/table1")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
             
-        client.post("/api/schema/table2")
+        client.post("/api/tables/table2")
             .header(ContentType::JSON)
             .body(serde_json::to_string(&schema).unwrap())
             .dispatch();
